@@ -1,35 +1,234 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Space+Mono&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    /* Colors - Lo-fi anime pastel theme with AI touches */
+    --primary: #c2a3ff; /* Pastel lavender */
+    --primary-dark: #a98acf; /* Darker lavender */
+    --accent: #ffb6e1; /* Pastel pink */
+    --accent-dark: #f598cc; /* Darker pink */
+    --blue-pastel: #a3e4e4; /* Pastel turquoise */
+    --blue-dark: #8ad1d1; /* Slightly darker pastel turquoise */
+    --neon-green: #a6ffb5; /* Neon green for circuit effects */
+    --neon-blue: #98e8e8; /* Pastel bright turquoise */
+    --background: #f5f0ff; /* Soft lavender background */
+    --background-secondary: #f0e6ff; /* Slightly darker background */
+    --text: #6c5b7b; /* Soft purple text */
+    --text-secondary: #8a7a99; /* Lighter text */
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--text);
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-heading {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-mono {
+  font-family: 'Space Mono', monospace;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'Space Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+button:focus, input:focus, select:focus {
+  outline: none;
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: var(--background-secondary);
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2563eb;
-  border-radius: 4px;
+  background: linear-gradient(to bottom, var(--primary), var(--accent));
+  border-radius: 8px;
+  border: 2px solid var(--background-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: linear-gradient(to bottom, var(--primary-dark), var(--accent-dark));
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(194, 163, 255, 0.3);
+  color: var(--text);
+}
+
+/* Placeholder text color */
+::placeholder {
+  color: rgba(108, 91, 123, 0.5);
+  opacity: 0.7;
+}
+
+/* Animation definitions */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-pastel {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(194, 163, 255, 0.2), 0 0 20px rgba(255, 182, 225, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(194, 163, 255, 0.3), 0 0 25px rgba(255, 182, 225, 0.2), 0 0 35px rgba(163, 228, 228, 0.1);
+  }
+}
+
+.animate-pulse-pastel {
+  animation: pulse-pastel 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 3s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 5s linear infinite reverse;
+}
+
+/* Page transition effect */
+.page-transition-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Grid pattern background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(194, 163, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(194, 163, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Transitions */
+.transition-fast {
+  transition: all 0.2s ease;
+}
+
+.transition-normal {
+  transition: all 0.3s ease;
+}
+
+.transition-slow {
+  transition: all 0.5s ease;
+}
+
+/* Shadows */
+.shadow-pastel-sm {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-pastel-md {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-pastel-lg {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-pastel-inset {
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-pastel-glow {
+  box-shadow: 0 0 10px rgba(194, 163, 255, 0.3), 0 0 20px rgba(255, 182, 225, 0.2);
+}
+
+/* Border radius */
+.rounded-pastel-sm {
+  border-radius: 4px;
+}
+
+.rounded-pastel-md {
+  border-radius: 8px;
+}
+
+.rounded-pastel-lg {
+  border-radius: 12px;
+}
+
+.rounded-pastel-xl {
+  border-radius: 20px;
+}
+
+/* Drop shadow for text */
+.drop-shadow-pastel {
+  filter: drop-shadow(0 0 6px rgba(194, 163, 255, 0.4));
+}
+
+/* Responsive font sizes */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }

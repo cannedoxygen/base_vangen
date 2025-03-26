@@ -15,6 +15,7 @@ const VanityAddressGenerator = () => {
   const workerRef = useRef(null);
   const startTimeRef = useRef(null);
   const pairCountRef = useRef(0);
+  const foundResultsRef = useRef(0); // Track found results separately from state
   
   // Initialize the worker
   useEffect(() => {
@@ -27,10 +28,15 @@ const VanityAddressGenerator = () => {
         const { type, data } = event.data;
         
         if (type === 'RESULT') {
-          setResults(prev => [...prev, data]);
+          console.log('Result received from worker:', data);
+          setResults(prev => {
+            const newResults = [...prev, data];
+            foundResultsRef.current = newResults.length;
+            return newResults;
+          });
           
           // If we've found enough addresses, stop the worker
-          if (results.length + 1 >= numAddresses) {
+          if (foundResultsRef.current >= numAddresses) {
             stopWorker();
           }
         } else if (type === 'PROGRESS') {
@@ -53,29 +59,33 @@ const VanityAddressGenerator = () => {
         workerRef.current.terminate();
       }
     };
-  }, [results, numAddresses]);
+  }, []); // Remove the dependencies to prevent recreation of worker
   
   const startWorker = () => {
     if (!isValidInputs()) return;
+    
+    console.log('Starting worker with criteria:', { beginsWith, endsWith, caseSensitive, numAddresses });
     
     // Reset state
     setResults([]);
     setPairCount(0);
     setPairsPerSec(0);
     pairCountRef.current = 0;
+    foundResultsRef.current = 0;
     startTimeRef.current = Date.now();
     setIsLoading(true);
     
     // Start the worker
     workerRef.current.postMessage({
-      beginsWith: beginsWith.toLowerCase(),
-      endsWith: endsWith.toLowerCase(),
+      beginsWith,
+      endsWith,
       caseSensitive,
       numAddresses
     });
   };
   
   const stopWorker = () => {
+    console.log('Stopping worker');
     if (workerRef.current) {
       workerRef.current.terminate();
       
@@ -88,7 +98,15 @@ const VanityAddressGenerator = () => {
         const { type, data } = event.data;
         
         if (type === 'RESULT') {
-          setResults(prev => [...prev, data]);
+          setResults(prev => {
+            const newResults = [...prev, data];
+            foundResultsRef.current = newResults.length;
+            return newResults;
+          });
+          
+          if (foundResultsRef.current >= numAddresses) {
+            stopWorker();
+          }
         } else if (type === 'PROGRESS') {
           pairCountRef.current = data;
           setPairCount(data);
@@ -137,6 +155,7 @@ const VanityAddressGenerator = () => {
   
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('Form submitted, isLoading:', isLoading);
     
     if (isLoading) {
       stopWorker();
@@ -147,21 +166,58 @@ const VanityAddressGenerator = () => {
   
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl flex flex-col items-center">
-      <div className="w-full bg-blue-600/10 backdrop-blur p-6 rounded-xl border border-blue-900/50 shadow-lg mb-8">
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent drop-shadow-lg">
-            Base Vanity Address Generator
+      <div className="w-full bg-white/50 backdrop-blur-md p-6 rounded-pastel-lg border border-aikira-primary/20 shadow-pastel-lg mb-8 relative animate-fade-in overflow-hidden">
+        {/* Decorative corner elements */}
+        <div className="absolute top-0 left-0 w-16 h-16">
+          <div className="absolute top-0 left-0 w-8 h-1 bg-aikira-accent opacity-60"></div>
+          <div className="absolute top-0 left-0 w-1 h-8 bg-aikira-accent opacity-60"></div>
+        </div>
+        <div className="absolute top-0 right-0 w-16 h-16">
+          <div className="absolute top-0 right-0 w-8 h-1 bg-aikira-blue-pastel opacity-60"></div>
+          <div className="absolute top-0 right-0 w-1 h-8 bg-aikira-blue-pastel opacity-60"></div>
+        </div>
+        <div className="absolute bottom-0 left-0 w-16 h-16">
+          <div className="absolute bottom-0 left-0 w-8 h-1 bg-aikira-blue-pastel opacity-60"></div>
+          <div className="absolute bottom-0 left-0 w-1 h-8 bg-aikira-blue-pastel opacity-60"></div>
+        </div>
+        <div className="absolute bottom-0 right-0 w-16 h-16">
+          <div className="absolute bottom-0 right-0 w-8 h-1 bg-aikira-accent opacity-60"></div>
+          <div className="absolute bottom-0 right-0 w-1 h-8 bg-aikira-accent opacity-60"></div>
+        </div>
+        
+        {/* Background decorative elements */}
+        <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-aikira-primary opacity-10 blur-xl"></div>
+        <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-aikira-accent opacity-10 blur-xl"></div>
+        
+        {/* Soft pastel header */}
+        <div className="text-center mb-8 relative">
+          <h1 className="text-4xl font-heading font-bold text-transparent bg-clip-text bg-gradient-mix mb-2 drop-shadow-pastel">
+            AIKIRA VANITY
           </h1>
-          <p className="text-blue-300 mt-2">
-            Create Ethereum addresses with custom prefixes or suffixes
+          
+          <div className="flex items-center justify-center gap-1 mb-3">
+            <div className="h-px w-12 bg-aikira-primary opacity-40"></div>
+            <div className="h-2 w-2 rounded-full bg-aikira-primary opacity-60"></div>
+            <div className="h-px w-24 bg-gradient-primary opacity-40"></div>
+            <div className="h-2 w-2 rounded-full bg-aikira-blue-pastel opacity-60"></div>
+            <div className="h-px w-12 bg-aikira-blue-pastel opacity-40"></div>
+          </div>
+          
+          <p className="text-aikira-text-secondary font-light tracking-wider text-lg">
+            ｇｅｎｅｒａｔｅ ｙｏｕｒ ｄｒｅａｍ ａｄｄｒｅｓｓ
           </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-blue-300 mb-1">
-                Address Starts With (after 0x)
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid md:grid-cols-2 gap-6 relative">
+            {/* Subtle divider lines */}
+            <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-1 h-20 bg-aikira-accent/20"></div>
+            <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-1 h-20 bg-aikira-blue-pastel/20"></div>
+            
+            <div className="relative group">
+              <label className="block text-sm font-medium text-aikira-text mb-2 uppercase tracking-wider">
+                <span className="text-aikira-blue-pastel mr-1">❀</span>
+                Address Starts With
               </label>
               <input
                 type="text"
@@ -169,12 +225,16 @@ const VanityAddressGenerator = () => {
                 onChange={(e) => setBeginsWith(e.target.value.trim())}
                 disabled={isLoading}
                 placeholder="e.g. c0ffee"
-                className="w-full p-2 bg-black/40 border border-blue-900 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 bg-white/70 backdrop-blur-sm border border-aikira-primary/30 rounded-pastel-md 
+                  text-aikira-text focus:ring-2 focus:ring-aikira-primary focus:border-transparent shadow-pastel-inset
+                  transition-normal"
               />
+              <div className="absolute top-9 right-3 h-2 w-2 rounded-full bg-aikira-primary opacity-0 group-hover:opacity-60 transition-normal"></div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-blue-300 mb-1">
+            <div className="relative group">
+              <label className="block text-sm font-medium text-aikira-text mb-2 uppercase tracking-wider">
+                <span className="text-aikira-primary mr-1">❀</span>
                 Address Ends With
               </label>
               <input
@@ -183,56 +243,80 @@ const VanityAddressGenerator = () => {
                 onChange={(e) => setEndsWith(e.target.value.trim())}
                 disabled={isLoading}
                 placeholder="e.g. dead"
-                className="w-full p-2 bg-black/40 border border-blue-900 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 bg-white/70 backdrop-blur-sm border border-aikira-blue-pastel/30 rounded-pastel-md 
+                  text-aikira-text focus:ring-2 focus:ring-aikira-blue-pastel focus:border-transparent shadow-pastel-inset
+                  transition-normal"
               />
+              <div className="absolute top-9 right-3 h-2 w-2 rounded-full bg-aikira-blue-pastel opacity-0 group-hover:opacity-60 transition-normal"></div>
             </div>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-blue-300 mb-1">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="relative group">
+              <label className="block text-sm font-medium text-aikira-text mb-2 uppercase tracking-wider">
+                <span className="text-aikira-accent mr-1">❀</span>
                 Number of Addresses
               </label>
               <select
                 value={numAddresses}
                 onChange={(e) => setNumAddresses(Number(e.target.value))}
                 disabled={isLoading}
-                className="w-full p-2 bg-black/40 border border-blue-900 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 bg-white/70 backdrop-blur-sm border border-aikira-accent/30 rounded-pastel-md 
+                  text-aikira-text focus:ring-2 focus:ring-aikira-accent focus:border-transparent shadow-pastel-inset
+                  transition-normal"
               >
                 {[1, 3, 5, 10].map(num => (
                   <option key={num} value={num}>{num}</option>
                 ))}
               </select>
+              <div className="absolute top-9 right-3 h-2 w-2 rounded-full bg-aikira-accent opacity-0 group-hover:opacity-60 transition-normal"></div>
             </div>
             
-            <div className="flex items-center">
+            <div className="flex items-center justify-center relative group">
               <input
                 type="checkbox"
                 id="case-sensitive"
                 checked={caseSensitive}
                 onChange={(e) => setCaseSensitive(e.target.checked)}
                 disabled={isLoading}
-                className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-blue-900 rounded"
+                className="h-5 w-5 text-aikira-primary focus:ring-aikira-primary border-aikira-blue-pastel/40 rounded-pastel-sm
+                  transition-normal"
               />
-              <label htmlFor="case-sensitive" className="ml-2 block text-sm text-blue-300">
+              <label htmlFor="case-sensitive" className="ml-3 block text-sm text-aikira-text uppercase tracking-wider">
+                <span className="text-aikira-neon-blue mr-1">❀</span>
                 Case Sensitive
               </label>
+              <div className="absolute inset-0 rounded-pastel-md border border-aikira-primary/0 group-hover:border-aikira-primary/20 transition-normal"></div>
             </div>
           </div>
           
-          <div className="flex justify-center">
+          <div className="flex justify-center relative">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-mix opacity-30"></div>
+            
             <button
               type="submit"
-              className={`py-2 px-8 rounded-lg font-bold transition-all shadow-lg ${
+              className={`relative py-3 px-12 rounded-pastel-md font-heading font-bold text-lg tracking-widest uppercase 
+                transition-normal ${
                 isLoading
-                  ? 'bg-red-700 hover:bg-red-600 text-white'
-                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white'
-              } animate-pulse-blue`}
+                  ? 'bg-gradient-accent text-white hover:shadow-pastel-glow'
+                  : 'bg-gradient-primary text-white hover:shadow-pastel-glow'
+              } animate-pulse-pastel`}
             >
-              {isLoading ? 'Stop Generation' : 'Generate Address'}
+              <span className="absolute top-0 left-0 right-0 bottom-0 bg-white/10 rounded-pastel-md scale-0 group-hover:scale-100 transition-normal"></span>
+              {isLoading ? 'S T O P' : 'G E N E R A T E'}
             </button>
           </div>
         </form>
+        
+        {/* Subtle decorative elements */}
+        <div className="absolute top-2 right-3 text-xs text-aikira-blue-pastel/70 font-mono">
+          <div>AIKIRA-882</div>
+          <div>ドリーム</div>
+        </div>
+        <div className="absolute bottom-2 left-3 text-xs text-aikira-accent/70 font-mono">
+          <div>パステル</div>
+          <div>v2.0</div>
+        </div>
       </div>
       
       <div className="w-full space-y-6">
@@ -249,9 +333,17 @@ const VanityAddressGenerator = () => {
         />
       </div>
       
-      <div className="mt-8 text-sm text-center text-blue-300/70">
-        <p>This tool generates addresses locally in your browser.</p>
-        <p>Your private keys are never sent to any server.</p>
+      <div className="mt-8 text-sm text-center text-aikira-text-secondary tracking-wider">
+        <div className="flex items-center justify-center gap-1">
+          <div className="h-px w-4 bg-aikira-accent/40"></div>
+          <p>All processing happens in your browser</p>
+          <div className="h-px w-4 bg-aikira-accent/40"></div>
+        </div>
+        <div className="flex items-center justify-center gap-1 mt-1">
+          <div className="h-px w-4 bg-aikira-blue-pastel/40"></div>
+          <p>Your keys are never sent to any server</p>
+          <div className="h-px w-4 bg-aikira-blue-pastel/40"></div>
+        </div>
       </div>
     </div>
   );
